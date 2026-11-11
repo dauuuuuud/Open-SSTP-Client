@@ -51,6 +51,9 @@ internal enum class OscPrefKey {
     RECONNECTION_LIFE,
     LOG_DO_SAVE_LOG,
     LOG_DIR,
+    KILL_SWITCH_ENABLED,
+    AUTO_CONNECT,
+    BLOCK_IPV6,
 }
 
 
@@ -73,7 +76,10 @@ internal val DEFAULT_BOOLEAN_MAP = mapOf(
     OscPrefKey.ROUTE_DO_ENABLE_APP_BASED_RULE to false,
     OscPrefKey.ROUTE_DO_SHOW_BACKGROUND_APPS to false,
     OscPrefKey.RECONNECTION_ENABLED to false,
-    OscPrefKey.LOG_DO_SAVE_LOG to false
+    OscPrefKey.LOG_DO_SAVE_LOG to false,
+    OscPrefKey.KILL_SWITCH_ENABLED to false,
+    OscPrefKey.AUTO_CONNECT to false,
+    OscPrefKey.BLOCK_IPV6 to true
 )
 
 internal val DEFAULT_INT_MAP = mapOf(

@@ -1,71 +1,117 @@
-# Open SSTP Client for Android <img src="https://github.com/kittoku/Open-SSTP-Client/raw/main/images/icon.png" height="40">
-This is an open-sourced Secure Socket Tunneling Protocol (MS-SSTP) client for Android, developed for accessing to 
-[VPN Azure Cloud](https://www.vpnazure.net/) (or [SoftEther VPN Server](https://www.softether.org/)). 
-So no test with other servers is done. Its behavior may be still unstable.
+# SSTP VPN — Modern Android SSTP Client
 
-## Installation
-You can download and install the latest version via [Google Play](https://play.google.com/store/apps/details?id=kittoku.osc).
-Some of previous versions are released as apk file on [the releases page](https://github.com/kittoku/Open-SSTP-Client/releases).
+A production-ready Android VPN client for the **Secure Socket Tunneling Protocol (MS-SSTP)**, built on the
+[Open-SSTP-Client](https://github.com/kittoku/Open-SSTP-Client) protocol engine and rebuilt as a modern
+Jetpack Compose application with Material Design 3.
+
+The app ships with a built-in, lazily-loaded directory of public SSTP servers (sourced from VPN Gate via a
+worker endpoint) and fully supports arbitrary custom SSTP servers (host, port, username, password).
+
+## Features
+
+### VPN & Connection
+- One-tap connect / disconnect with a large animated central button and live status (Connecting / Connected / Disconnecting / Error)
+- Persistent foreground notification with live status, speed readout, and Connect/Disconnect quick actions
+- Real-time download / upload speed and total data-usage statistics
+- Kill Switch (aggressive reconnection mode — see notes below)
+- Split tunneling (per-app allow / disallow lists, powered by the engine's app rules)
+- Auto-connect on device boot and optional reconnection on network change
+- IPv6 leak blocking (routes `::/0` into the tunnel by default when PPP IPv6 is disabled)
+- Connection log page with the engine's full event history
+
+### Servers
+- Remote server directory fetched from `https://mute-frog-166a.da7oud.workers.dev/`
+- Only servers with `protocols.sstp.available = true` are shown
+- **Lazy / incremental loading**: the first 20 servers render instantly, further batches of 15 are appended on scroll
+- Pull-to-refresh plus 30-minute cache in Room; stale caches refresh automatically
+- Search by hostname, filter by country / favorites, sort by ping, speed, or score
+- Server cards show hostname, country with flag emoji, IP, SSTP port, ping (color-coded), speed, score, and sessions
+- Add custom servers with host, port, username, and password; favorites are stored locally
+
+### UI / UX
+- Material Design 3, Jetpack Compose, edge-to-edge layout
+- Light / Dark / System theme with Material You dynamic color on Android 12+
+- Calm deep-blue palette with color-coded ping indicators
+- Full English and Persian (فارسی) localization
+
+### Security
+- Credentials stored with `EncryptedSharedPreferences` (Android Keystore master key)
+- Custom servers and profiles stored locally only; nothing is collected or sent anywhere except the configured VPN server
+- Network Security Config restricting cleartext traffic
+- VPN permission is always requested through the system dialog before connecting
+- No sensitive values (passwords, keys) are written to the connection log
+
+## Architecture
+
+```
+kittoku.osc                    ← SSTP protocol engine (upstream, largely untouched)
+├── unit / io / client / control    PPP, SSTP, SSL layers
+├── terminal                        IPTerminal / SSLTerminal (tunnel + stats hooks)
+├── service                         SstpVpnService (foreground VpnService)
+├── preference                      OscPrefKey engine settings (SharedPreferences-driven)
+└── bus                             NEW: ConnectionBus / StatsBus / LogBus (StateFlow bridges)
+
+kittoku.osc.app                ← New application layer
+├── data       Retrofit API (kotlinx-serialization), Room DB, repository, mappers
+├── connection VpnConnector (writes engine prefs, starts the service)
+├── security   CredentialsStore (EncryptedSharedPreferences)
+├── di         Koin modules
+├── service    BootReceiver, SaveCertReceiver
+└── ui         Compose screens: Home / Servers / Settings / Split Tunnel / Log
+               ViewModels (MVVM) with Kotlin Coroutines + Flow
+```
+
+- **Pattern**: MVVM — Compose UI → ViewModel → Repository/Connector → engine buses
+- **DI**: Koin
+- **Networking**: Retrofit + OkHttp + kotlinx-serialization
+- **Storage**: Room (server cache, favorites, custom servers), EncryptedSharedPreferences (credentials)
+- **Engine bridge**: the engine remains driven by `SharedPreferences` (`OscPrefKey`); the app layer reads/writes
+  those keys and observes connection state, traffic, and logs through `StateFlow` buses fed directly by the engine
+
+## Building
+
+Requirements: JDK 17+, Android SDK with platform `android-37.1` (compileSdk 37).
+
+```bash
+git clone https://github.com/<your-fork>/Open-SSTP-Client.git
+cd Open-SSTP-Client
+echo "sdk.dir=/path/to/android-sdk" > local.properties
+./gradlew :app:assembleDebug          # debug APK
+./gradlew :app:assembleRelease        # unsigned release APK (R8 minified)
+./gradlew :app:testDebugUnitTest      # unit tests
+```
+
+Output: `app/build/outputs/apk/{debug,release}/`. The release build is minified with R8 and needs to be
+signed with your own keystore before distribution.
 
 ## Usage
-Enter `Host`, `Username` and `Password` preferences and turn the switch on. If a key icon gets to show on 
-the right side of the status bar, establishing a VPN connection has been succeeded. To disconnect 
-the connection, turn the switch off in the home tab or tap the notification. You can save/load the 
-profile from the upper-right option menu.  
-<br>
-<img src="images/example_home.png" width=20%>
-<img src="images/example_setting_1.png" width=20%>
-<img src="images/example_setting_2.png" width=20%>
-<img src="images/example_tile.png" width=20%>
 
+1. Pick a server from the **Servers** tab (or add a custom one via the FAB) and tap it to select it.
+2. On the **Home** tab, tap the large central button to connect. Grant the VPN permission when asked.
+3. Watch live status, speed, and data usage; disconnect with the same button or from the notification.
+4. Tune behavior in **Settings**: custom DNS, IPv6 blocking, cipher suites, keep-alive, timeouts/retries,
+   reconnection, kill switch, split tunneling, theme, and default credentials.
 
-## Setting tab
-Some settings to be noted are written below:
+## Kill Switch note
 
-### Specify Trusted Certificates (SSL Layer)
-If you choose a certain directory, the client uses ONLY certificates in the directory, but the default 
-certificate store. I made this option for debugging.  
-  
-This preference is displayed as `Add Trusted Certificates` in v1.7.0 or older.
+The in-app kill switch currently works by forcing aggressive reconnection when the tunnel drops, and the
+app routes all IPv4 (and `::/0` when IPv6 tunneling is disabled) traffic through the VPN. For a
+kernel-enforced guarantee, enable **Settings → VPN → Always-On VPN + Block connections without VPN** for
+this app in the Android system settings.
 
-### PPP Network Protocol
-You can choose what network protocol PPP layer tries enabling. Remember, IPv6 option just gives the device 
-a link local address, never guarantees that you can communicate perfectly with IPv6 protocol.
+## Testing
 
-### Custom DNS Server Address
-You can specify DNS server to use in this option. Packets associated with this address is routed to 
-the VPN tunnel. If you specify a IPv4(v6) address and disable IPv4(v6) network,
-domain names possibly cannot be resolved.
+- `./gradlew :app:testDebugUnitTest` — 15 unit tests, all passing:
+  - `ServerMapperTest` (3): real-payload parsing, SSTP-only filtering, failed-response handling
+  - `ServerFilterTest` (8): search, country and favorite filters, all sort modes, country dedup, lazy pager batching, empty state
+  - `FormatUtilsTest` (4): flag emoji, byte/speed/bit formatters, duration, error mapping
+- `:app:assembleDebug` and `:app:assembleRelease` (R8) both build successfully.
+- Live SSTP connections to real servers were not exercised in the build sandbox (no emulator/device);
+  the protocol engine itself is the stable upstream implementation and was kept intact.
 
-### Enable App-Based Rule
-With `Select Allowed/Disallowed Apps` option, you can specify the apps which can/cannot use the VPN tunnel.
-Even allowed apps cannot use the VPN tunnel if their routes are not on the routing table.
-So when you use this option, enabling `Add Default Route` option is recommended.
+## Credits
 
-
-## Notice
-* `Host` preference can also contain IP address, but cannot include a port number. You can configure it in
-the setting tab.
-
-* Your device needs to install a self-signed certificate and
- disable `Verify Hostname` option to access to a server using it
- 
-* A server must enable DHCP
- 
-* Only **PAP** and **MS-CHAPv2** authentication protocols can be enabled. No EAP. 
- 
-## Debugging
-It is almost impossible that I can debug a problem caused in any environments but my own. In a networking
-app, there are many possible reasons to cause the problem and I cannot identify the real one unless the 
-problem can be reproduced in my environment.
-
-So it is strongly encouraged that you should debug by yourself. With `Select Cipher Suites` option, this client tries 
-to use `TLS_RSA_WITH_AES_128_CBC_SHA` or `TLS_RSA_WITH_AES_256_CBC_SHA` as a cipher suite so that you 
-can decrypt and investigate packets with software like WireShark. I think there can be a similar app for 
-Android. Don't forget the great software, Android Studio and its emulator (v^ー°)
-
-I don't have Windows Server OS. So I don't officially support accessing to it, but there is a
- successful case. See [this issue](https://github.com/kittoku/Open-SSTP-Client/issues/8#issuecomment-590241322).
-
-## License
-Licensed under MIT. Be sure you use this software at your own risk. 
+The SSTP/PPP protocol engine is the work of the original
+[Open-SSTP-Client](https://github.com/kittoku/Open-SSTP-Client) by [kittoku](https://github.com/kittoku).
+This fork replaces the original View-based UI with a Jetpack Compose application, adds the server
+directory, statistics, and modern Android architecture on top of it.

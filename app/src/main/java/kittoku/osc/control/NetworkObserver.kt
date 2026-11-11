@@ -6,6 +6,8 @@ import android.net.Network
 import android.net.NetworkCapabilities
 import android.net.NetworkRequest
 import android.os.Build
+import kittoku.osc.bus.ConnectionBus
+import kittoku.osc.bus.StatsBus
 import kittoku.osc.SharedBridge
 import kittoku.osc.preference.OscPrefKey
 import kittoku.osc.preference.accessor.getBooleanPrefValue
@@ -19,6 +21,8 @@ internal class NetworkObserver(val bridge: SharedBridge) {
 
     init {
         wipeStatus()
+        ConnectionBus.setConnected(System.currentTimeMillis())
+        StatsBus.startSampling(bridge.service.scope)
 
         val request = NetworkRequest.Builder().let {
             it.addTransportType(NetworkCapabilities.TRANSPORT_VPN)
@@ -100,6 +104,7 @@ internal class NetworkObserver(val bridge: SharedBridge) {
             manager.unregisterNetworkCallback(callback)
         } catch (_: IllegalArgumentException) {} // already unregistered
 
+        StatsBus.stopSampling()
         wipeStatus()
     }
 }

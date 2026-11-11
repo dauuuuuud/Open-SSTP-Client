@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">وی‌پی‌ان SSTP</string>
+
+    <string name="tab_home">خانه</string>
+    <string name="tab_servers">سرورها</string>
+    <string name="tab_settings">تنظیمات</string>
+
+    <string name="state_disconnected">قطع شده</string>
+    <string name="state_connecting">در حال اتصال…</string>
+    <string name="state_connected">محافظت‌شده</string>
+    <string name="state_disconnecting">در حال قطع…</string>
+    <string name="state_error">خطا</string>
+
+    <string name="action_connect">اتصال</string>
+    <string name="action_disconnect">قطع اتصال</string>
+    <string name="action_change">تغییر</string>
+    <string name="action_save">ذخیره</string>
+    <string name="action_cancel">لغو</string>
+    <string name="action_done">انجام شد</string>
+
+    <string name="stat_download">دانلود</string>
+    <string name="stat_upload">آپلود</string>
+    <string name="stat_total_down">کل دانلود</string>
+    <string name="stat_total_up">کل آپلود</string>
+
+    <string name="no_server_selected">سروری انتخاب نشده است</string>
+    <string name="tap_to_choose_server">برای انتخاب سرور ضربه بزنید</string>
+
+    <string name="search_servers_hint">جستجوی نام سرور، کشور، آی‌پی…</string>
+    <string name="filter_favorites">علاقه‌مندی‌ها</string>
+    <string name="filter_country">کشور</string>
+    <string name="filter_all_countries">همه کشورها</string>
+    <string name="sort_by">مرتب‌سازی</string>
+    <string name="sort_score">امتیاز</string>
+    <string name="sort_ping">پینگ</string>
+    <string name="sort_speed">سرعت</string>
+    <string name="sort_sessions">نشست‌ها</string>
+    <string name="server_count">%1$d سرور موجود است</string>
+    <string name="load_failed">بارگذاری سرورها ناموفق بود: %1$s</string>
+    <string name="sessions_n">%1$d نشست</string>
+
+    <string name="add_custom_server">افزودن سرور دلخواه</string>
+    <string name="toggle_favorite">تغییر علاقه‌مندی</string>
+    <string name="delete_server">حذف سرور</string>
+    <string name="field_name">نام</string>
+    <string name="field_host">میزبان</string>
+    <string name="field_port">پورت</string>
+    <string name="field_username">نام کاربری</string>
+    <string name="field_password">رمز عبور</string>
+
+    <string name="settings_security">امنیت</string>
+    <string name="kill_switch">کلید قطع اضطراری</string>
+    <string name="kill_switch_desc">پس از قطع غیرمنتظره، تلاش برای اتصال ادامه می‌یابد تا ترافیک شما در معرض قرار نگیرد</string>
+    <string name="verify_certificate">اعتبارسنجی گواهی TLS</string>
+    <string name="verify_certificate_desc">سرورهای با گواهی نامعتبر رد می‌شوند (توصیه می‌شود)</string>
+    <string name="auto_connect">اتصال خودکار پس از روشن شدن</string>
+    <string name="auto_connect_desc">پس از راه‌اندازی دستگاه، به‌طور خودکار متصل می‌شود</string>
+
+    <string name="settings_network">شبکه</string>
+    <string name="custom_dns">دی‌ان‌اس دلخواه</string>
+    <string name="custom_dns_desc">استفاده از سرور DNS مشخص داخل تونل</string>
+    <string name="dns_address">آدرس سرور DNS</string>
+    <string name="enable_ipv6">فعال‌سازی IPv6</string>
+    <string name="enable_ipv6_desc">در صورت پشتیبانی سرور، IPv6 داخل تونل مذاکره می‌شود</string>
+    <string name="block_ipv6">مسدودسازی نشت IPv6</string>
+    <string name="block_ipv6_desc">مسیر IPv6 به داخل تونل هدایت می‌شود تا از وی‌پی‌ان عبور نکند</string>
+    <string name="cipher_suites">مجموعه رمزها</string>
+    <string name="cipher_suites_desc">محدود کردن مجموعه رمزهای TLS ارائه‌شده به سرور</string>
+    <string name="cipher_selected_count">%1$d مجموعه رمز انتخاب شده است</string>
+
+    <string name="settings_authentication">احراز هویت</string>
+    <string name="settings_reconnection">اتصال مجدد</string>
+    <string name="auto_reconnect">اتصال مجدد خودکار</string>
+    <string name="auto_reconnect_desc">پس از قطع غیرمنتظره به‌طور خودکار تلاش می‌شود</string>
+    <string name="retry_count">تعداد تلاش</string>
+    <string name="retry_interval">فاصله (ثانیه)</string>
+
+    <string name="settings_appearance">ظاهر</string>
+    <string name="theme_system">هماهنگ با سیستم</string>
+    <string name="theme_light">روشن</string>
+    <string name="theme_dark">تیره</string>
+
+    <string name="settings_advanced">پیشرفته</string>
+    <string name="connection_log">گزارش اتصال</string>
+    <string name="settings_defaults">پیش‌فرض‌ها</string>
+    <string name="default_credentials_desc">اعتبارنامه‌ای که به‌طور خودکار برای سرورهای عمومی VPN Gate استفاده می‌شود</string>
+    <string name="edit_default_credentials">ویرایش اعتبارنامه پیش‌فرض</string>
+    <string name="show_connection_log">نمایش گزارش اتصال</string>
+    <string name="show_connection_log_desc">گزارش اتصال از طریق تنظیمات در دسترس بماند</string>
+
+    <string name="split_tunneling">تونل‌سازی تفکیکی</string>
+    <string name="split_tunneling_desc">انتخاب کنید کدام برنامه‌ها از تونل وی‌پی‌ان استفاده کنند</string>
+    <string name="allowed_apps">برنامه‌های مجاز</string>
+    <string name="disallowed_apps">برنامه‌های غیرمجاز</string>
+    <string name="show_background_apps">نمایش برنامه‌های پس‌زمینه</string>
+    <string name="search_apps_hint">جستجوی برنامه‌ها…</string>
+    <string name="selected_apps_go_through_vpn">%1$d برنامه انتخاب‌شده از وی‌پی‌ان عبور می‌کنند</string>
+    <string name="selected_apps_bypass_vpn">%1$d برنامه انتخاب‌شده از وی‌پی‌ان عبور نمی‌کنند</string>
+    <string name="split_tunneling_disabled_hint">برای انتخاب برنامه‌ها، تونل‌سازی تفکیکی را فعال کنید</string>
+</resources>

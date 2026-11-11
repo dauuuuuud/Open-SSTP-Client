@@ -1,6 +1,7 @@
 package kittoku.osc.terminal
 
 import android.os.ParcelFileDescriptor
+import kittoku.osc.bus.StatsBus
 import kittoku.osc.ControlMessage
 import kittoku.osc.Result
 import kittoku.osc.SharedBridge
@@ -28,6 +29,7 @@ internal class IPTerminal(private val bridge: SharedBridge) {
     private val doRoutePrivateAddresses = getBooleanPrefValue(OscPrefKey.ROUTE_DO_ROUTE_PRIVATE_ADDRESSES, bridge.prefs)
     private val doUseCustomDNSServer = getBooleanPrefValue(OscPrefKey.DNS_DO_USE_CUSTOM_SERVER, bridge.prefs)
     private val doAddCustomRoutes = getBooleanPrefValue(OscPrefKey.ROUTE_DO_ADD_CUSTOM_ROUTES, bridge.prefs)
+    private val doBlockIPv6 = getBooleanPrefValue(OscPrefKey.BLOCK_IPV6, bridge.prefs)
 
     internal suspend fun initialize() {
         if (bridge.PPP_IPv4_ENABLED) {
@@ -48,6 +50,11 @@ internal class IPTerminal(private val bridge: SharedBridge) {
                 InetAddress.getByAddress(bridge.currentProposedDNS).also {
                     bridge.builder.addDnsServer(it)
                 }
+            }
+
+            if (doBlockIPv6 && !bridge.PPP_IPv6_ENABLED) {
+                // black-hole IPv6 while the tunnel is IPv4-only, to prevent IPv6 leaks
+                bridge.builder.addRoute("::", 0)
             }
 
             setIPv4BasedRouting()
@@ -150,12 +157,19 @@ internal class IPTerminal(private val bridge: SharedBridge) {
         // nothing will be written until initialized
         // the position won't be changed
         outputStream?.write(buffer.array(), start, size)
+        StatsBus.onBytesUploaded(size)
     }
 
     internal fun readPacket(buffer: ByteBuffer) {
         buffer.clear()
-        buffer.position(inputStream?.read(buffer.array(), 0, bridge.PPP_MTU) ?: buffer.position())
-        buffer.flip()
+        val size = inputStream?.read(buffer.array(), 0, bridge.PPP_MTU) ?: -1
+        if (size > 0) {
+            buffer.position(size)
+            buffer.flip()
+            StatsBus.onBytesDownloaded(size)
+        } else {
+            buffer.flip()
+        }
     }
 
     internal fun close() {

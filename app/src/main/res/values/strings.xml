@@ -1,3 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Open SSTP Client</string>
+    <string name="app_name">SSTP VPN</string>
+
+    <string name="tab_home">Home</string>
+    <string name="tab_servers">Servers</string>
+    <string name="tab_settings">Settings</string>
+
+    <string name="state_disconnected">Disconnected</string>
+    <string name="state_connecting">Connecting…</string>
+    <string name="state_connected">Protected</string>
+    <string name="state_disconnecting">Disconnecting…</string>
+    <string name="state_error">Error</string>
+
+    <string name="action_connect">Connect</string>
+    <string name="action_disconnect">Disconnect</string>
+    <string name="action_change">Change</string>
+    <string name="action_save">Save</string>
+    <string name="action_cancel">Cancel</string>
+    <string name="action_done">Done</string>
+
+    <string name="stat_download">Download</string>
+    <string name="stat_upload">Upload</string>
+    <string name="stat_total_down">Total down</string>
+    <string name="stat_total_up">Total up</string>
+
+    <string name="no_server_selected">No server selected</string>
+    <string name="tap_to_choose_server">Tap to choose a server</string>
+
+    <string name="search_servers_hint">Search hostname, country, IP…</string>
+    <string name="filter_favorites">Favorites</string>
+    <string name="filter_country">Country</string>
+    <string name="filter_all_countries">All countries</string>
+    <string name="sort_by">Sort</string>
+    <string name="sort_score">Score</string>
+    <string name="sort_ping">Ping</string>
+    <string name="sort_speed">Speed</string>
+    <string name="sort_sessions">Sessions</string>
+    <string name="server_count">%1$d servers available</string>
+    <string name="load_failed">Could not load servers: %1$s</string>
+    <string name="sessions_n">%1$d sessions</string>
+
+    <string name="add_custom_server">Add custom server</string>
+    <string name="toggle_favorite">Toggle favorite</string>
+    <string name="delete_server">Delete server</string>
+    <string name="field_name">Name</string>
+    <string name="field_host">Host</string>
+    <string name="field_port">Port</string>
+    <string name="field_username">Username</string>
+    <string name="field_password">Password</string>
+
+    <string name="settings_security">Security</string>
+    <string name="kill_switch">Kill switch</string>
+    <string name="kill_switch_desc">Keep retrying automatically and never leave traffic exposed after an unexpected drop</string>
+    <string name="verify_certificate">Verify TLS certificate</string>
+    <string name="verify_certificate_desc">Reject servers with invalid certificates (recommended)</string>
+    <string name="auto_connect">Auto connect on boot</string>
+    <string name="auto_connect_desc">Connect automatically after the device starts</string>
+
+    <string name="settings_network">Network</string>
+    <string name="custom_dns">Custom DNS</string>
+    <string name="custom_dns_desc">Use a specific DNS server inside the tunnel</string>
+    <string name="dns_address">DNS server address</string>
+    <string name="enable_ipv6">Enable IPv6</string>
+    <string name="enable_ipv6_desc">Negotiate IPv6 inside the tunnel when the server supports it</string>
+    <string name="block_ipv6">Block IPv6 leaks</string>
+    <string name="block_ipv6_desc">Route IPv6 into the tunnel so it cannot bypass the VPN</string>
+    <string name="cipher_suites">Cipher suites</string>
+    <string name="cipher_suites_desc">Restrict the TLS cipher suites offered to the server</string>
+    <string name="cipher_selected_count">%1$d cipher suites selected</string>
+
+    <string name="settings_authentication">Authentication</string>
+    <string name="settings_reconnection">Reconnection</string>
+    <string name="auto_reconnect">Auto reconnect</string>
+    <string name="auto_reconnect_desc">Retry automatically after an unexpected disconnect</string>
+    <string name="retry_count">Retry count</string>
+    <string name="retry_interval">Interval (s)</string>
+
+    <string name="settings_appearance">Appearance</string>
+    <string name="theme_system">Follow system</string>
+    <string name="theme_light">Light</string>
+    <string name="theme_dark">Dark</string>
+
+    <string name="settings_advanced">Advanced</string>
+    <string name="connection_log">Connection log</string>
+    <string name="settings_defaults">Defaults</string>
+    <string name="default_credentials_desc">Credentials used automatically for public VPN Gate servers</string>
+    <string name="edit_default_credentials">Edit default credentials</string>
+    <string name="show_connection_log">Show connection log</string>
+    <string name="show_connection_log_desc">Keep the connection log reachable from settings</string>
+
+    <string name="split_tunneling">Split tunneling</string>
+    <string name="split_tunneling_desc">Choose which apps use the VPN tunnel</string>
+    <string name="allowed_apps">Allowed apps</string>
+    <string name="disallowed_apps">Disallowed apps</string>
+    <string name="show_background_apps">Show background apps</string>
+    <string name="search_apps_hint">Search apps…</string>
+    <string name="selected_apps_go_through_vpn">%1$d selected apps go through the VPN</string>
+    <string name="selected_apps_bypass_vpn">%1$d selected apps bypass the VPN</string>
+    <string name="split_tunneling_disabled_hint">Enable split tunneling to pick apps</string>
 </resources>
