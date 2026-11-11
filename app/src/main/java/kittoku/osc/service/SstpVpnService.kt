@@ -12,6 +12,7 @@ import android.content.pm.PackageManager
 import android.net.VpnService
 import android.os.Build
 import android.service.quicksettings.TileService
+import android.util.Log
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
@@ -28,6 +29,9 @@ import kittoku.osc.preference.accessor.getURIPrefValue
 import kittoku.osc.preference.accessor.resetReconnectionLife
 import kittoku.osc.preference.accessor.setBooleanPrefValue
 import kittoku.osc.preference.accessor.setIntPrefValue
+import kittoku.osc.server.api.RetrofitClient
+import kittoku.osc.server.model.Server
+import kittoku.osc.server.repository.ServerRepository
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -38,6 +42,7 @@ import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -67,6 +72,20 @@ internal class SstpVpnService : VpnService() {
     private var controller: Controller?  = null
 
     private var jobReconnect: Job? = null
+    
+    // Server switching logic
+    private val serverRepository: ServerRepository by lazy {
+        ServerRepository(RetrofitClient.serverApiService)
+    }
+    private var currentServerIndex = 0
+    private var maxServerAttempts = 5
+    private var isSwitchingServer = false
+    private var triedServers = mutableListOf<Server>()
+    private var allServers = listOf<Server>()
+    
+    companion object {
+        private const val TAG = "SstpVpnService"
+    }
 
     private fun setRootState(state: Boolean) {
         setBooleanPrefValue(state, OscPrefKey.ROOT_STATE, prefs)
@@ -78,6 +97,70 @@ internal class SstpVpnService : VpnService() {
                 ComponentName(this, SstpTileService::class.java)
             )
         }
+    }
+    
+    /**
+     * Load servers from API
+     */
+    private suspend fun loadServers(): List<Server> {
+        return withContext(Dispatchers.IO) {
+            try {
+                serverRepository.fetchServers().getOrNull()?.let { countries ->
+                    serverRepository.getAllServers()
+                } ?: emptyList()
+            } catch (e: Exception) {
+                Log.e(TAG, "Failed to load servers", e)
+                emptyList()
+            }
+        }
+    }
+    
+    /**
+     * Try to connect to the next server
+     */
+    private fun tryNextServer() {
+        scope.launch {
+            try {
+                allServers = loadServers()
+                
+                if (currentServerIndex >= allServers.size || currentServerIndex >= maxServerAttempts) {
+                    // No more servers to try
+                    notifyError("All servers failed. Tried ${triedServers.size} servers.")
+                    close()
+                    return@launch
+                }
+                
+                val server = allServers[currentServerIndex]
+                currentServerIndex++
+                triedServers.add(server)
+                
+                // Set server details in preferences
+                setStringPrefValue(server.sstpHostname, OscPrefKey.HOME_HOSTNAME, prefs)
+                setIntPrefValue(server.sstpPort, OscPrefKey.SSL_PORT, prefs)
+                
+                Log.d(TAG, "Trying server ${currentServerIndex}/${Math.min(allServers.size, maxServerAttempts)}: ${server.sstpHostname}")
+                notifyMessage("Connecting to: ${server.sstpHostname}", NO********ION_RECONNECT_ID, NO********ION_RECONNECT_CHANNEL)
+                
+                // Disconnect current connection if any
+                controller?.disconnect()
+                controller = null
+                
+                // Initialize new connection
+                initializeClient()
+                
+            } catch (e: Exception) {
+                Log.e(TAG, "Error in tryNextServer", e)
+                notifyError("Error: ${e.message}")
+                close()
+            }
+        }
+    }
+    
+    /**
+     * Set string preference value
+     */
+    private fun setStringPrefValue(value: String, key: OscPrefKey, prefs: SharedPreferences) {
+        prefs.edit().putString(key.name, value).apply()
     }
 
     override fun onCreate() {
@@ -102,6 +185,11 @@ internal class SstpVpnService : VpnService() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         return when (intent?.action) {
             ACTION_VPN_CONNECT -> {
+                // Reset server switching state
+                currentServerIndex = 0
+                triedServers.clear()
+                isSwitchingServer = false
+                
                 controller?.kill(false, null)
 
                 beForegrounded()
@@ -112,13 +200,42 @@ internal class SstpVpnService : VpnService() {
 
                 logWriter?.write("Establish VPN connection")
 
-                initializeClient()
+                // Load servers and try first one
+                scope.launch {
+                    allServers = loadServers()
+                    if (allServers.isNotEmpty()) {
+                        val server = allServers[currentServerIndex]
+                        currentServerIndex++
+                        triedServers.add(server)
+                        
+                        setStringPrefValue(server.sstpHostname, OscPrefKey.HOME_HOSTNAME, prefs)
+                        setIntPrefValue(server.sstpPort, OscPrefKey.SSL_PORT, prefs)
+                        
+                        logWriter?.write("Trying server: ${server.sstpHostname}")
+                        initializeClient()
+                    } else {
+                        notifyError("No servers available")
+                        close()
+                    }
+                }
 
                 setRootState(true)
 
                 START_STICKY
             }
 
+            ACTION_VPN_DISCONNECT -> {
+                // ensure that reconnection has been completely canceled or done
+                runBlocking { jobReconnect?.cancelAndJoin() }
+
+                controller?.disconnect()
+                controller = null
+
+                close()
+
+                START_NOT_STICKY
+            }
+            
             else -> {
                 // ensure that reconnection has been completely canceled or done
                 runBlocking { jobReconnect?.cancelAndJoin() }

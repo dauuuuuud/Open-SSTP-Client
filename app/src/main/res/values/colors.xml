@@ -5,4 +5,24 @@
     <color name="deep_orange_700">#FFE64A19</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    
+    <!-- Material Design 3 Colors -->
+    <color name="colorPrimary">#FF6200EE</color>
+    <color name="colorPrimaryVariant">#FF3700B3</color>
+    <color name="colorOnPrimary">#FFFFFFFF</color>
+    <color name="colorSecondary">#FF03DAC6</color>
+    <color name="colorOnSecondary">#FF000000</color>
+    <color name="colorSurface">#FFFFFFFF</color>
+    <color name="colorOnSurface">#FF000000</color>
+    <color name="colorSurfaceVariant">#FFF0F0F0</color>
+    <color name="colorOnSurfaceVariant">#FF4A4A4A</color>
+    <color name="colorError">#FFB00020</color>
+    <color name="colorOnError">#FFFFFFFF</color>
+    
+    <!-- Status colors -->
+    <color name="status_connected">#FF4CAF50</color>
+    <color name="status_connecting">#FF2196F3</color>
+    <color name="status_disconnected">#FF9E9E9E</color>
+    <color name="status_failed">#FFB00020</color>
+    <color name="status_retrying">#FFFFC107</color>
 </resources>
